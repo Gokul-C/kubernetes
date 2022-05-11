@@ -1,0 +1,60 @@
+# mongo-express is used to connect with internet .
+#like its used to make connection between mongodb and internet to access mongodb from web .
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-express
+  labels:
+    app: mongo-express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+      - name: mongo-express
+        image: mongo-express
+        ports:
+        - containerPort: 8081
+#mentioning credentials from secret file.        
+        env:
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret    #secret - file name
+              key: mongo-root-username  #in this name the user name is stored , it acts as variable .
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: mongodb-secret   #same for password
+              key: mongo-root-password   #check secret file for better understanding
+        - name: ME_CONFIG_MONGODB_SERVER
+          valueFrom: 
+            configMapKeyRef:
+              name: mongodb-configmap  #these information is in configmap file.
+              key: database_url        #represinting which database this mongo-express should connect .   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-express-service
+spec:
+  selector:
+    app: mongo-express
+  type: LoadBalancer  
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+      nodePort: 30000   # it was the node port , its only used to talk with external internet like through browser . 
+
+#After exec all files minikube automatically doesnt start the external service communication . 
+#so that we use "$ minikube service service-name " --> this will start external service . 
+#Then type "$ minikube ip" so that it will show the ip addr of minikube  .
+#then open browser and type ipaddr:port ==> ex : 192.168.0.1:30000
+ 

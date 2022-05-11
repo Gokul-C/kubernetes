@@ -1,0 +1,9 @@
+# configmap is used by mongo-express to connect with some database like mongodb
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-configmap
+data:
+  database_url: mongodb-service #represinting database to connect with . 
+  
+  #service name (mentioned in deployment file)
